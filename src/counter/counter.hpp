@@ -2,10 +2,12 @@
 #define __psxact_counter_hpp__
 
 
+#include "addressable.hpp"
 #include "console.hpp"
 
 
 struct counter_unit_t {
+
   uint16_t counter;
   bool running;
 
@@ -46,7 +48,8 @@ struct counter_unit_t {
 };
 
 
-struct counter_t {
+struct counter_t : public addressable_t {
+
   bool in_hblank;
   bool in_vblank;
 
@@ -54,9 +57,9 @@ struct counter_t {
 
   counter_t();
 
-  uint32_t io_read(bus_width_t width, uint32_t address);
+  uint32_t io_read_word(uint32_t address);
 
-  void io_write(bus_width_t width, uint32_t address, uint32_t data);
+  void io_write_word(uint32_t address, uint32_t data);
 
   void tick();
 
@@ -65,6 +68,7 @@ struct counter_t {
   void vblank(bool active);
 
 private:
+
   void unit_init(int n, int single, int period);
 
   void unit_irq(int n);
@@ -84,6 +88,7 @@ private:
   void unit_set_control(int n, uint16_t data);
 
   void unit_set_counter(int n, uint16_t data);
+
 };
 
 

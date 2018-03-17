@@ -25,5 +25,5 @@ void gpu_t::draw_point(point_t point, color_t color) {
   color.g = ulimit<8>::clamp(color.g + dither);
   color.b = ulimit<8>::clamp(color.b + dither);
 
-  vram::write(point.x, point.y, color_to_uint16(color));
+  vram.write(point.x, point.y, color_to_uint16(color));
 }

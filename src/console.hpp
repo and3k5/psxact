@@ -1,8 +1,11 @@
-#ifndef __PSXACT_BUS_HPP__
-#define __PSXACT_BUS_HPP__
+#ifndef __psxact_console__
+#define __psxact_console__
+
 
 #include <cstdint>
+#include "addressable.hpp"
 #include "memory.hpp"
+
 
 enum class bus_width_t {
   byte,
@@ -18,6 +21,12 @@ struct cpu_t;
 
 struct dma_t;
 
+struct exp1_t;
+
+struct exp2_t;
+
+struct exp3_t;
+
 struct gpu_t;
 
 struct input_t;
@@ -27,6 +36,7 @@ struct mdec_t;
 struct spu_t;
 
 struct console_t {
+
   memory_t<19> bios;
   memory_t<21> wram;
   memory_t<10> dmem;
@@ -35,6 +45,9 @@ struct console_t {
   counter_t *counter;
   cpu_t *cpu;
   dma_t *dma;
+  exp1_t *exp1;
+  exp2_t *exp2;
+  exp3_t *exp3;
   gpu_t *gpu;
   input_t *input;
   mdec_t *mdec;
@@ -44,13 +57,26 @@ struct console_t {
 
   void irq(int32_t interrupt);
 
-  uint32_t read(bus_width_t width, uint32_t address);
+  uint32_t read_byte(uint32_t address);
 
-  void write(bus_width_t width, uint32_t address, uint32_t data);
+  uint32_t read_half(uint32_t address);
+
+  uint32_t read_word(uint32_t address);
+
+  void write_byte(uint32_t address, uint32_t data);
+
+  void write_half(uint32_t address, uint32_t data);
+
+  void write_word(uint32_t address, uint32_t data);
 
   void run_for_one_frame(int *x, int *y, int *w, int *h);
+
+private:
+
+  addressable_t *decode(uint32_t address);
+
 };
 
 extern console_t *bus;
 
-#endif // __PSXACT_BUS_HPP__
+#endif // __psxact_console__

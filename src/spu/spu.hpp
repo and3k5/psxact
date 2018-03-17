@@ -2,11 +2,13 @@
 #define __psxact_spu_core_hpp__
 
 
+#include "addressable.hpp"
 #include "console.hpp"
 #include "memory.hpp"
 
 
-struct spu_t {
+struct spu_t : public addressable_t {
+
   uint16_t control;
   uint16_t status;
 
@@ -18,9 +20,12 @@ struct spu_t {
   uint16_t sound_ram_address_latch;
   uint16_t sound_ram_transfer_control;
 
-  uint32_t io_read(bus_width_t width, uint32_t address);
+  spu_t();
 
-  void io_write(bus_width_t width, uint32_t address, uint32_t data);
+  uint32_t io_read_half(uint32_t address);
+
+  void io_write_half(uint32_t address, uint32_t data);
+
 };
 
 

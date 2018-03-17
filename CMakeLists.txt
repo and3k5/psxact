@@ -36,6 +36,9 @@ set(SOURCE_FILES
         src/cpu/disassembler.cpp
         src/dma/dma.cpp
         src/dma/dma.hpp
+        src/expansion/exp1.cpp
+        src/expansion/exp2.cpp
+        src/expansion/exp3.cpp
         src/gpu/gpu_gp0.cpp
         src/gpu/gpu_gp1.cpp
         src/gpu/gpu.cpp
@@ -52,6 +55,8 @@ set(SOURCE_FILES
         src/memory/vram.hpp
         src/spu/spu.cpp
         src/spu/spu.hpp
+        src/addressable.cpp
+        src/addressable.hpp
         src/fifo.hpp
         src/limits.hpp
         src/memory.hpp

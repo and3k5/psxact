@@ -1,11 +1,15 @@
 #include <cassert>
 #include <cstring>
 #include <exception>
+#include "addressable.hpp"
 #include "console.hpp"
 #include "cdrom/cdrom.hpp"
 #include "counter/counter.hpp"
 #include "cpu/cpu.hpp"
 #include "dma/dma.hpp"
+#include "expansion/exp1.hpp"
+#include "expansion/exp2.hpp"
+#include "expansion/exp3.hpp"
 #include "gpu/gpu.hpp"
 #include "input/input.hpp"
 #include "mdec/mdec.hpp"
@@ -24,7 +28,11 @@ console_t::console_t(const char *bios_file_name, const char *game_file_name) {
   mdec = new mdec_t();
   spu = new spu_t();
 
-  utility::read_all_bytes(bios_file_name, bios);
+  exp1 = new exp1_t();
+  exp2 = new exp2_t();
+  exp3 = new exp3_t();
+
+  bios.load_blob(bios_file_name);
 }
 
 
@@ -34,69 +42,29 @@ void console_t::irq(int32_t interrupt) {
 }
 
 
-uint32_t console_t::read(bus_width_t width, uint32_t address) {
-  if (limits::between<0x00000000, 0x007fffff>(address)) {
-    switch (width) {
-    case bus_width_t::byte: return wram.read_byte(address);
-    case bus_width_t::half: return wram.read_half(address);
-    case bus_width_t::word: return wram.read_word(address);
-    }
-  }
+addressable_t *console_t::decode(uint32_t address) {
+  if (limits::between<0x00000000, 0x007fffff>(address)) { return &wram; }
+  if (limits::between<0x1fc00000, 0x1fc7ffff>(address)) { return &bios; }
+  if (limits::between<0x1f800000, 0x1f8003ff>(address)) { return &dmem; }
 
-  if (limits::between<0x1fc00000, 0x1fc7ffff>(address)) {
-    switch (width) {
-    case bus_width_t::byte: return bios.read_byte(address);
-    case bus_width_t::half: return bios.read_half(address);
-    case bus_width_t::word: return bios.read_word(address);
-    }
-  }
+  if (limits::between<0x1f801040, 0x1f80104f>(address)) { return input; }
+  if (limits::between<0x1f801070, 0x1f801077>(address)) { return cpu; }
+  if (limits::between<0x1f801080, 0x1f8010ff>(address)) { return dma; }
+  if (limits::between<0x1f801100, 0x1f80113f>(address)) { return counter; }
+  if (limits::between<0x1f801800, 0x1f801803>(address)) { return cdrom; }
+  if (limits::between<0x1f801810, 0x1f801817>(address)) { return gpu; }
+  if (limits::between<0x1f801820, 0x1f801827>(address)) { return mdec; }
+  if (limits::between<0x1f801c00, 0x1f801fff>(address)) { return spu; }
 
-  if (limits::between<0x1f800000, 0x1f8003ff>(address)) {
-    switch (width) {
-    case bus_width_t::byte: return dmem.read_byte(address);
-    case bus_width_t::half: return dmem.read_half(address);
-    case bus_width_t::word: return dmem.read_word(address);
-    }
-  }
+  if (limits::between<0x1f000000, 0x1f7fffff>(address)) { return exp1; } // expansion region 1
+  if (limits::between<0x1f802000, 0x1f802fff>(address)) { return exp2; } // expansion region 2
+  if (limits::between<0x1fa00000, 0x1fbfffff>(address)) { return exp3; } // expansion region 3
 
-  if (limits::between<0x1f801040, 0x1f80104f>(address)) {
-    return input->io_read(width, address);
-  }
+  return nullptr;
+}
 
-  if (limits::between<0x1f801070, 0x1f801077>(address)) {
-    return cpu->io_read(width, address);
-  }
 
-  if (limits::between<0x1f801080, 0x1f8010ff>(address)) {
-    return dma->io_read(width, address);
-  }
-
-  if (limits::between<0x1f801100, 0x1f80113f>(address)) {
-    return counter->io_read(width, address);
-  }
-
-  if (limits::between<0x1f801800, 0x1f801803>(address)) {
-    return cdrom->io_read(width, address);
-  }
-
-  if (limits::between<0x1f801810, 0x1f801817>(address)) {
-    return gpu->io_read(width, address);
-  }
-
-  if (limits::between<0x1f801820, 0x1f801827>(address)) {
-    return mdec->io_read(width, address);
-  }
-
-  if (limits::between<0x1f801c00, 0x1f801fff>(address)) {
-    return spu->io_read(width, address);
-  }
-
-  if (limits::between<0x1f000000, 0x1f7fffff>(address) || // expansion region 1
-      limits::between<0x1f802000, 0x1f802fff>(address) || // expansion region 2
-      limits::between<0x1fa00000, 0x1fbfffff>(address)) { // expansion region 3
-    return 0;
-  }
-
+static uint32_t read_common(uint32_t address) {
   switch (address) {
 //case 0x1f801000: return 0x1f000000;
 //case 0x1f801004: return 0x1f802000;
@@ -115,84 +83,59 @@ uint32_t console_t::read(bus_width_t width, uint32_t address) {
     return 0;
   }
 
-  printf("system.read(%d, 0x%08x)\n", width, address);
+  printf("[console] read(0x%08x)\n", address);
   throw std::exception();
 }
 
 
-void console_t::write(bus_width_t width, uint32_t address, uint32_t data) {
-  if (limits::between<0x00000000, 0x007fffff>(address)) {
-    switch (width) {
-    case bus_width_t::byte: return wram.write_byte(address, data);
-    case bus_width_t::half: return wram.write_half(address, data);
-    case bus_width_t::word: return wram.write_word(address, data);
-    }
-  }
+uint32_t console_t::read_byte(uint32_t address) {
+  auto component = decode(address);
 
-  if (limits::between<0x1fc00000, 0x1fc7ffff>(address)) {
-    printf("bios write: $%08x <- $%08x\n", address, data);
-    return;
-  }
+  return component
+    ? component->io_read_byte(address)
+    : read_common(address)
+    ;
+}
 
-  if (limits::between<0x1f800000, 0x1f8003ff>(address)) {
-    switch (width) {
-    case bus_width_t::byte: return dmem.write_byte(address, data);
-    case bus_width_t::half: return dmem.write_half(address, data);
-    case bus_width_t::word: return dmem.write_word(address, data);
-    }
-  }
 
-  if (limits::between<0x1f801040, 0x1f80104f>(address)) {
-    return input->io_write(width, address, data);
-  }
+uint32_t console_t::read_half(uint32_t address) {
+  auto component = decode(address);
 
-  if (limits::between<0x1f801070, 0x1f801077>(address)) {
-    return cpu->io_write(width, address, data);
-  }
+  return component
+    ? component->io_read_half(address)
+    : read_common(address)
+    ;
+}
 
-  if (limits::between<0x1f801080, 0x1f8010ff>(address)) {
-    return dma->io_write(width, address, data);
-  }
 
-  if (limits::between<0x1f801100, 0x1f80113f>(address)) {
-    return counter->io_write(width, address, data);
-  }
+uint32_t console_t::read_word(uint32_t address) {
+  auto component = decode(address);
 
-  if (limits::between<0x1f801800, 0x1f801803>(address)) {
-    // return load_executable();
-    return cdrom->io_write(width, address, data);
-  }
+  return component
+    ? component->io_read_word(address)
+    : read_common(address)
+    ;
+}
 
-  if (limits::between<0x1f801810, 0x1f801817>(address)) {
-    return gpu->io_write(width, address, data);
-  }
 
-  if (limits::between<0x1f801820, 0x1f801827>(address)) {
-    return mdec->io_write(width, address, data);
-  }
-
-  if (limits::between<0x1f801c00, 0x1f801fff>(address)) {
-    return spu->io_write(width, address, data);
-  }
-
-  if (limits::between<0x1f000000, 0x1f7fffff>(address) || // expansion region 1
-      limits::between<0x1f802000, 0x1f802fff>(address) || // expansion region 2
-      limits::between<0x1fa00000, 0x1fbfffff>(address)) { // expansion region 3
-    return;
-  }
-
+static void write_common(uint32_t address, uint32_t data) {
   switch (address) {
-  case 0x1f801000: assert(data == 0x1f000000); return;
-  case 0x1f801004: assert(data == 0x1f802000); return;
-  case 0x1f801008: assert(data == 0x0013243f); return;
-  case 0x1f80100c: assert(data == 0x00003022); return;
-  case 0x1f801010: assert(data == 0x0013243f); return;
-  case 0x1f801014: assert(data == 0x200931e1); return;
-  case 0x1f801018: assert(data == 0x00020843 || data == 0x00020943); return;
-  case 0x1f80101c: assert(data == 0x00070777); return;
-  case 0x1f801020: assert(data == 0x00031125 || data == 0x0000132c || data == 0x00001323 || data == 0x00001325); return;
+  case 0x1f801000: return assert(data == 0x1f000000);
+  case 0x1f801004: return assert(data == 0x1f802000);
+  case 0x1f801008: return assert(data == 0x0013243f);
+  case 0x1f80100c: return assert(data == 0x00003022);
+  case 0x1f801010: return assert(data == 0x0013243f);
+  case 0x1f801014: return assert(data == 0x200931e1);
+  case 0x1f801018: return assert(data == 0x00020843 || data == 0x00020943);
+  case 0x1f80101c: return assert(data == 0x00070777);
+  case 0x1f801020: return assert(data == 0x00031125 || data == 0x0000132c || data == 0x00001323 || data == 0x00001325);
 
-  case 0x1f801060: assert(data == 0x00000b88); return;
+  case 0x1f801060: return assert(data == 0x00000b88);
+  }
+
+  if (address == 0x1f802041) {
+    printf("[console] post(0x%08x)\n", data);
+    return;
   }
 
   if (address == 0xfffe0130) {
@@ -219,8 +162,38 @@ void console_t::write(bus_width_t width, uint32_t address, uint32_t data) {
     return;
   }
 
-  printf("system.write(%d, 0x%08x, 0x%08x)\n", width, address, data);
+  printf("[console] write(0x%08x, 0x%08x)\n", address, data);
   throw std::exception();
+}
+
+
+void console_t::write_byte(uint32_t address, uint32_t data) {
+  auto component = decode(address);
+
+  return component
+    ? component->io_write_byte(address, data)
+    : write_common(address, data)
+    ;
+}
+
+
+void console_t::write_half(uint32_t address, uint32_t data) {
+  auto component = decode(address);
+
+  return component
+    ? component->io_write_half(address, data)
+    : write_common(address, data)
+    ;
+}
+
+
+void console_t::write_word(uint32_t address, uint32_t data) {
+  auto component = decode(address);
+
+  return component
+    ? component->io_write_word(address, data)
+    : write_common(address, data)
+    ;
 }
 
 

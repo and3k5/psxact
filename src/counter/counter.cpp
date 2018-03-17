@@ -14,17 +14,17 @@
 #include "utility.hpp"
 
 
-counter_t::counter_t() {
+counter_t::counter_t()
+  : addressable_t("counter") {
+
   unit_init(0, 11, 7 * 4);
   unit_init(1, 11, 7 * 3413);
   unit_init(2,  1, 8);
 }
 
 
-uint32_t counter_t::io_read(bus_width_t width, uint32_t address) {
-  if (utility::log_timer) {
-    printf("timer::io_read(%d, 0x%08x)\n", width, address);
-  }
+uint32_t counter_t::io_read_word(uint32_t address) {
+  printf("[counter] io_read_word(0x%08x)\n", address);
 
   switch (address & ~3) {
   case 0x1f801100: return unit_get_counter(0);
@@ -52,10 +52,8 @@ uint32_t counter_t::io_read(bus_width_t width, uint32_t address) {
 }
 
 
-void counter_t::io_write(bus_width_t width, uint32_t address, uint32_t data) {
-  if (utility::log_timer) {
-    printf("timer::io_write(%d, 0x%08x, 0x%08x)\n", width, address, data);
-  }
+void counter_t::io_write_word(uint32_t address, uint32_t data) {
+  printf("[counter] io_write_word(0x%08x, 0x%08x)\n", address, data);
 
   switch (address & ~3) {
   case 0x1f801100: return unit_set_counter(0, data);

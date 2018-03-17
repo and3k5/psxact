@@ -2,7 +2,9 @@
 #include "utility.hpp"
 
 
-input_t::input_t() {
+input_t::input_t()
+  : addressable_t("input") {
+
   baud_factor = 1;
   baud_reload = 0x0088;
 
@@ -15,10 +17,8 @@ static uint32_t get_index(uint32_t address) {
 }
 
 
-uint32_t input_t::io_read(bus_width_t width, uint32_t address) {
-  if (utility::log_input) {
-    printf("input::io_read(%d, 0x%08x)\n", width, address);
-  }
+uint32_t input_t::io_read_word(uint32_t address) {
+  printf("[input] io_read_word(0x%08x)\n", address);
 
   switch (get_index(address)) {
   case 0:
@@ -52,10 +52,8 @@ static int32_t get_baud_rate_factor(uint32_t data) {
 }
 
 
-void input_t::io_write(bus_width_t width, uint32_t address, uint32_t data) {
-  if (utility::log_input) {
-    printf("input::io_write(%d, 0x%08x, 0x%08x)\n", width, address, data);
-  }
+void input_t::io_write_word(uint32_t address, uint32_t data) {
+  printf("[input] io_write_word(0x%08x, 0x%08x)\n", address, data);
 
   switch (get_index(address)) {
   case 0x0:

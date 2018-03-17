@@ -259,7 +259,7 @@ static void draw_triangle(gpu_t &state, uint32_t command, triangle_t &triangle) 
 
         if (get_color(command, triangle, w0, w1, w2, color)) {
           if (command & (1 << 25)) {
-            gpu_t::color_t bg = gpu_t::uint16_to_color(vram::read(point.x, point.y));
+            gpu_t::color_t bg = gpu_t::uint16_to_color(vram.read(point.x, point.y));
 
             switch (triangle.tev.color_mix_mode) {
             case 0:

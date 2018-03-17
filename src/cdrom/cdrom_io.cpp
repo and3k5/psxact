@@ -47,46 +47,31 @@ uint8_t cdrom_t::io_read_port_3() {
 }
 
 
-uint8_t cdrom_t::io_read_internal(uint32_t port) {
-  switch (port) {
-  case 0:
-    return io_read_port_0();
+uint32_t cdrom_t::io_read_word(uint32_t address) {
+  printf("[cdc] io_read_word(0x%08x)\n", address);
 
-  case 1:
-    return io_read_port_1();
+  uint8_t b0 = data_fifo.read();
+  uint8_t b1 = data_fifo.read();
+  uint8_t b2 = data_fifo.read();
+  uint8_t b3 = data_fifo.read();
 
-  case 2:
-    return io_read_port_2();
-
-  case 3:
-    return io_read_port_3();
-
-  default:
-    return 0;
-  }
+  return (b0 << 0) | (b1 << 8) | (b2 << 16) | (b3 << 24);
 }
 
 
-uint32_t cdrom_t::io_read(bus_width_t width, uint32_t address) {
-  if (width == bus_width_t::word && address == 0x1f801800) {
-    uint8_t b0 = data_fifo.read();
-    uint8_t b1 = data_fifo.read();
-    uint8_t b2 = data_fifo.read();
-    uint8_t b3 = data_fifo.read();
-
-    return (b0 << 0) | (b1 << 8) | (b2 << 16) | (b3 << 24);
-  }
-
-  assert(width == bus_width_t::byte);
+uint32_t cdrom_t::io_read_byte(uint32_t address) {
+  printf("[cdc] io_read_byte(0x%08x)\n", address);
 
   uint32_t port = get_port(address);
-  uint32_t data = io_read_internal(port);
 
-  if (utility::log_cdrom) {
-    printf("cdrom_t::io_read_port_%d_%d() returned 0x%02x\n", port, index, data);
+  switch (port) {
+  case 0: return io_read_port_0();
+  case 1: return io_read_port_1();
+  case 2: return io_read_port_2();
+  case 3: return io_read_port_3();
   }
 
-  return data;
+  return 0;
 }
 
 
@@ -157,64 +142,63 @@ void cdrom_t::io_write_port_3_2(uint8_t data) {}
 void cdrom_t::io_write_port_3_3(uint8_t data) {}
 
 
-void cdrom_t::io_write(bus_width_t width, uint32_t address, uint32_t data) {
-  assert(width == bus_width_t::byte);
+void cdrom_t::io_write_word(uint32_t address, uint32_t data) {
+  printf("[cdc] io_write_word(0x%08x, 0x%08x)\n", address, data);
+}
+
+
+void cdrom_t::io_write_byte(uint32_t address, uint32_t data) {
+  printf("[cdc] io_write_byte(0x%08x, 0x%08x)\n", address, data);
 
   uint32_t port = get_port(address);
 
-  if (utility::log_cdrom) {
-    printf("cdrom_t::io_write_port_%d_%d(0x%02x)\n", port, index, data);
-  }
-
-  uint8_t clipped = uint8_t(data);
-
   switch (port) {
   case 0:
-    return io_write_port_0_n(clipped);
+    return io_write_port_0_n(data);
 
   case 1:
     switch (index) {
     case 0:
-      return io_write_port_1_0(clipped);
+      return io_write_port_1_0(data);
 
     case 1:
-      return io_write_port_1_1(clipped);
+      return io_write_port_1_1(data);
 
     case 2:
-      return io_write_port_1_2(clipped);
+      return io_write_port_1_2(data);
 
     case 3:
-      return io_write_port_1_3(clipped);
+      return io_write_port_1_3(data);
     }
 
   case 2:
     switch (index) {
     case 0:
-      return io_write_port_2_0(clipped);
+      return io_write_port_2_0(data);
 
     case 1:
-      return io_write_port_2_1(clipped);
+      return io_write_port_2_1(data);
 
     case 2:
-      return io_write_port_2_2(clipped);
+      return io_write_port_2_2(data);
 
     case 3:
-      return io_write_port_2_3(clipped);
+      return io_write_port_2_3(data);
     }
 
   case 3:
     switch (index) {
     case 0:
-      return io_write_port_3_0(clipped);
+      return io_write_port_3_0(data);
 
     case 1:
-      return io_write_port_3_1(clipped);
+      return io_write_port_3_1(data);
 
     case 2:
-      return io_write_port_3_2(clipped);
+      return io_write_port_3_2(data);
 
     case 3:
-      return io_write_port_3_3(clipped);
+      return io_write_port_3_3(data);
     }
   }
 }

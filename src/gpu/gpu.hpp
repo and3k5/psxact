@@ -2,10 +2,16 @@
 #define __psxact_gpu_core_hpp__
 
 
+#include "addressable.hpp"
 #include "console.hpp"
+#include "memory/vram.hpp"
 
 
-struct gpu_t {
+extern vram_t vram;
+
+
+struct gpu_t : public addressable_t {
+
   uint32_t data_latch = 0;
   uint32_t status = 0x14802000;
   uint32_t texture_window_mask_x;
@@ -63,9 +69,11 @@ struct gpu_t {
     } run;
   } gpu_to_cpu_transfer;
 
-  uint32_t io_read(bus_width_t width, uint32_t address);
+  gpu_t();
 
-  void io_write(bus_width_t width, uint32_t address, uint32_t data);
+  uint32_t io_read_word(uint32_t address);
+
+  void io_write_word(uint32_t address, uint32_t data);
 
   uint32_t data();
 
@@ -131,6 +139,7 @@ struct gpu_t {
   static color_t get_texture_color_15bpp(tev_t &tev, point_t &coord);
 
   static color_t get_texture_color(tev_t &tev, point_t &coord);
+
 };
 
 

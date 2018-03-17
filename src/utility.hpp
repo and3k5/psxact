@@ -12,25 +12,13 @@
 
 
 namespace utility {
-  const bool log_cdrom = 0;
-  const bool log_cpu   = 0;
-  const bool log_dma   = 0;
-  const bool log_gpu   = 0;
-  const bool log_input = 0;
-  const bool log_spu   = 0;
-  const bool log_timer = 0;
-
-  template<int bits>
-  bool read_all_bytes(const char *filename, memory_t<bits> &memory) {
-    if (FILE* file = fopen(filename, "rb+")) {
-      fread(memory.b, sizeof(uint8_t), memory.size, file);
-      fclose(file);
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
+  // const bool log_cdrom = 0;
+  // const bool log_cpu   = 0;
+  // const bool log_dma   = 0;
+  // const bool log_gpu   = 0;
+  // const bool log_input = 0;
+  // const bool log_spu   = 0;
+  // const bool log_timer = 0;
 
   template<int bits>
   inline uint32_t sclip(uint32_t value) {

@@ -299,7 +299,7 @@ void cpu_t::op_jr() {
 
 void cpu_t::op_lb() {
   uint32_t address = get_rs() + decode_iconst();
-  uint32_t data = read_data(bus_width_t::byte, address);
+  uint32_t data = read_data_byte(address);
   data = utility::sclip<8>(data);
 
   set_rt_load(data);
@@ -308,7 +308,7 @@ void cpu_t::op_lb() {
 
 void cpu_t::op_lbu() {
   uint32_t address = get_rs() + decode_iconst();
-  uint32_t data = read_data(bus_width_t::byte, address);
+  uint32_t data = read_data_byte(address);
 
   set_rt_load(data);
 }
@@ -320,7 +320,7 @@ void cpu_t::op_lh() {
     enter_exception(cop0_exception_code::address_error_load);
   }
   else {
-    uint32_t data = read_data(bus_width_t::half, address);
+    uint32_t data = read_data_half(address);
     data = utility::sclip<16>(data);
 
     set_rt_load(data);
@@ -334,7 +334,7 @@ void cpu_t::op_lhu() {
     enter_exception(cop0_exception_code::address_error_load);
   }
   else {
-    uint32_t data = read_data(bus_width_t::half, address);
+    uint32_t data = read_data_half(address);
 
     set_rt_load(data);
   }
@@ -352,7 +352,7 @@ void cpu_t::op_lw() {
     enter_exception(cop0_exception_code::address_error_load);
   }
   else {
-    uint32_t data = read_data(bus_width_t::word, address);
+    uint32_t data = read_data_word(address);
 
     set_rt_load(data);
   }
@@ -375,7 +375,7 @@ void cpu_t::op_lwc2() {
     enter_exception(cop0_exception_code::address_error_load);
   }
   else {
-    uint32_t data = read_data(bus_width_t::word, address);
+    uint32_t data = read_data_word(address);
 
     cop2.write_gpr(decode_rt(), data);
   }
@@ -389,7 +389,7 @@ void cpu_t::op_lwc3() {
 
 void cpu_t::op_lwl() {
   uint32_t address = get_rs() + decode_iconst();
-  uint32_t data = read_data(bus_width_t::word, address & ~3);
+  uint32_t data = read_data_word(address & ~3);
 
   switch (address & 3) {
   default: data = (data << 24) | (get_rt_forwarded() & 0x00ffffff); break;
@@ -404,7 +404,7 @@ void cpu_t::op_lwl() {
 
 void cpu_t::op_lwr() {
   uint32_t address = get_rs() + decode_iconst();
-  uint32_t data = read_data(bus_width_t::word, address & ~3);
+  uint32_t data = read_data_word(address & ~3);
 
   switch (address & 3) {
   default: data = (data >>  0) | (get_rt_forwarded() & 0x00000000); break;
@@ -476,7 +476,7 @@ void cpu_t::op_sb() {
   uint32_t address = get_rs() + decode_iconst();
   uint32_t data = get_rt();
 
-  write_data(bus_width_t::byte, address, data);
+  write_data_byte(address, data);
 }
 
 
@@ -488,7 +488,7 @@ void cpu_t::op_sh() {
   else {
     uint32_t data = get_rt();
 
-    write_data(bus_width_t::half, address, data);
+    write_data_half(address, data);
   }
 }
 
@@ -570,7 +570,7 @@ void cpu_t::op_sw() {
   else {
     uint32_t data = get_rt();
 
-    write_data(bus_width_t::word, address, data);
+    write_data_word(address, data);
   }
 }
 
@@ -593,7 +593,7 @@ void cpu_t::op_swc2() {
   else {
     uint32_t data = cop2.read_gpr(decode_rt());
 
-    write_data(bus_width_t::word, address, data);
+    write_data_word(address, data);
   }
 }
 
@@ -605,7 +605,7 @@ void cpu_t::op_swc3() {
 
 void cpu_t::op_swl() {
   uint32_t address = get_rs() + decode_iconst();
-  uint32_t data = read_data(bus_width_t::word, address & ~3);
+  uint32_t data = read_data_word(address & ~3);
 
   switch (address & 3) {
   default: data = (data & 0xffffff00) | (get_rt() >> 24); break;
@@ -614,13 +614,13 @@ void cpu_t::op_swl() {
   case  3: data = (data & 0x00000000) | (get_rt() >>  0); break;
   }
 
-  write_data(bus_width_t::word, address & ~3, data);
+  write_data_word(address & ~3, data);
 }
 
 
 void cpu_t::op_swr() {
   uint32_t address = get_rs() + decode_iconst();
-  uint32_t data = read_data(bus_width_t::word, address & ~3);
+  uint32_t data = read_data_word(address & ~3);
 
   switch (address & 3) {
   default: data = (data & 0x00000000) | (get_rt() <<  0); break;
@@ -629,7 +629,7 @@ void cpu_t::op_swr() {
   case  3: data = (data & 0x00ffffff) | (get_rt() << 24); break;
   }
 
-  write_data(bus_width_t::word, address & ~3, data);
+  write_data_word(address & ~3, data);
 }
 
 

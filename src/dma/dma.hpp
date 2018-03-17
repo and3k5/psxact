@@ -2,10 +2,12 @@
 #define __psxact_dma_core_hpp__
 
 
+#include "addressable.hpp"
 #include "console.hpp"
 
 
-struct dma_t {
+struct dma_t : public addressable_t {
+
   uint32_t dpcr = 0x07654321;
   uint32_t dicr = 0x00000000;
 
@@ -15,9 +17,11 @@ struct dma_t {
     uint32_t control;
   } channels[7];
 
-  uint32_t io_read(bus_width_t width, uint32_t address);
+  dma_t();
 
-  void io_write(bus_width_t width, uint32_t address, uint32_t data);
+  uint32_t io_read_word(uint32_t address);
+
+  void io_write_word(uint32_t address, uint32_t data);
 
   void main();
 

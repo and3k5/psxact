@@ -3,12 +3,14 @@
 
 
 #include <cstdio>
+#include "addressable.hpp"
 #include "console.hpp"
 #include "cpu/cpu_cop0.hpp"
 #include "cpu/cpu_cop2.hpp"
 
 
-struct cpu_t {
+struct cpu_t : public addressable_t {
+
   cop0_core cop0;
   cop2_core cop2;
 
@@ -58,17 +60,25 @@ struct cpu_t {
 
   void read_code();
 
-  uint32_t read_data(bus_width_t width, uint32_t address);
+  uint32_t read_data_byte(uint32_t address);
 
-  void write_data(bus_width_t width, uint32_t address, uint32_t data);
+  uint32_t read_data_half(uint32_t address);
+
+  uint32_t read_data_word(uint32_t address);
+
+  void write_data_byte(uint32_t address, uint32_t data);
+
+  void write_data_half(uint32_t address, uint32_t data);
+
+  void write_data_word(uint32_t address, uint32_t data);
 
   void set_imask(uint32_t value);
 
   void set_istat(uint32_t value);
 
-  uint32_t io_read(bus_width_t width, uint32_t address);
+  uint32_t io_read_word(uint32_t address);
 
-  void io_write(bus_width_t width, uint32_t address, uint32_t data);
+  void io_write_word(uint32_t address, uint32_t data);
 
   // -============-
   //  Instructions
@@ -238,7 +248,8 @@ struct cpu_t {
   uint32_t get_rt_forwarded();
 
   uint32_t get_rs();
+
 };
 
 
-#endif // __PSXACT_CPU_CORE_HPP__
+#endif // __psxact_cpu_core_hpp__

@@ -1,7 +1,7 @@
 #include <cstdio>
 #include "console.hpp"
 #include "sdl2.hpp"
-#include "memory/vram.hpp"
+#include "gpu/gpu.hpp"
 
 
 console_t *bus;
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   int h = 480;
 
   while (1) {
-    if (renderer.render(vram::get_pointer(x, y), w, h) == 0) {
+    if (renderer.render(vram.get_pointer(x, y), w, h) == 0) {
       break;
     }
 

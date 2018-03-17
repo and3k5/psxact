@@ -43,7 +43,9 @@ cpu_t::opcode cpu_t::op_table_special[64] = {
 };
 
 
-cpu_t::cpu_t() {
+cpu_t::cpu_t()
+  : addressable_t("cpu") {
+
   regs.gp[0] = 0;
   regs.pc = 0xbfc00000;
   regs.next_pc = regs.pc + 4;
@@ -128,29 +130,73 @@ void cpu_t::read_code() {
 
   // todo: read i-cache
 
-  code = bus->read(bus_width_t::word, map_address(regs.this_pc));
+  code = bus->read_word(map_address(regs.this_pc));
 }
 
 
-uint32_t cpu_t::read_data(bus_width_t width, uint32_t address) {
+uint32_t cpu_t::read_data_byte(uint32_t address) {
   if (cop0.regs[12] & (1 << 16)) {
     return 0; // isc=1
   }
 
   // todo: read d-cache?
 
-  return bus->read(width, map_address(address));
+  return bus->read_byte(map_address(address));
 }
 
 
-void cpu_t::write_data(bus_width_t width, uint32_t address, uint32_t data) {
+uint32_t cpu_t::read_data_half(uint32_t address) {
+  if (cop0.regs[12] & (1 << 16)) {
+    return 0; // isc=1
+  }
+
+  // todo: read d-cache?
+
+  return bus->read_half(map_address(address));
+}
+
+
+uint32_t cpu_t::read_data_word(uint32_t address) {
+  if (cop0.regs[12] & (1 << 16)) {
+    return 0; // isc=1
+  }
+
+  // todo: read d-cache?
+
+  return bus->read_word(map_address(address));
+}
+
+
+void cpu_t::write_data_byte(uint32_t address, uint32_t data) {
   if (cop0.regs[12] & (1 << 16)) {
     return; // isc=1
   }
 
   // todo: write d-cache?
 
-  return bus->write(width, map_address(address), data);
+  return bus->write_byte(map_address(address), data);
+}
+
+
+void cpu_t::write_data_half(uint32_t address, uint32_t data) {
+  if (cop0.regs[12] & (1 << 16)) {
+    return; // isc=1
+  }
+
+  // todo: write d-cache?
+
+  return bus->write_half(map_address(address), data);
+}
+
+
+void cpu_t::write_data_word(uint32_t address, uint32_t data) {
+  if (cop0.regs[12] & (1 << 16)) {
+    return; // isc=1
+  }
+
+  // todo: write d-cache?
+
+  return bus->write_word(map_address(address), data);
 }
 
 
@@ -177,36 +223,23 @@ void cpu_t::set_istat(uint32_t value) {
 }
 
 
-uint32_t cpu_t::io_read(bus_width_t width, uint32_t address) {
-  if (utility::log_cpu) {
-    printf("cpu_cpu_t::io_read(%d, 0x%08x)\n", width, address);
+uint32_t cpu_t::io_read_word(uint32_t address) {
+  printf("[cpu] io_read_word(0x%08x)\n", address);
+
+  switch (address) {
+    case 0x1f801070: return i_stat;
+    case 0x1f801074: return i_mask;
   }
 
-  switch (address - 0x1f801070) {
-  case 0:
-    return i_stat;
-
-  case 4:
-    return i_mask;
-
-  default:
-    return 0;
-  }
+  return 0;
 }
 
 
-void cpu_t::io_write(bus_width_t width, uint32_t address, uint32_t data) {
-  if (utility::log_cpu) {
-    printf("cpu_cpu_t::io_write(%d, 0x%08x, 0x%08x)\n", width, address, data);
-  }
+void cpu_t::io_write_word(uint32_t address, uint32_t data) {
+  printf("[cpu] io_write_word(0x%08x, 0x%08x)\n", address, data);
 
-  switch (address - 0x1f801070) {
-  case 0:
-    set_istat(data & i_stat);
-    break;
-
-  case 4:
-    set_imask(data & 0x7ff);
-    break;
+  switch (address) {
+    case 0x1f801070: return set_istat(data & i_stat);
+    case 0x1f801074: return set_imask(data & 0x7ff);
   }
 }

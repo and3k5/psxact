@@ -3,7 +3,9 @@
 
 
 cdrom_t::cdrom_t(const char *game_file_name)
-    : game_file_name(game_file_name) {
+    : addressable_t("cdc")
+    , game_file_name(game_file_name) {
+
   game_file = fopen(game_file_name, "rb+");
 
   logic_transition(&cdrom_t::logic_idling, 1000);
@@ -49,12 +51,10 @@ void cdrom_t::read_sector() {
   constexpr int bytes_per_sector = 2352;
   constexpr int lead_in_duration = 2 * sectors_per_second;
 
-  if (utility::log_cdrom) {
-    printf("cdrom_t::read_sector(\"%02d:%02d:%02d\")\n",
-           read_timecode.minute,
-           read_timecode.second,
-           read_timecode.sector);
-  }
+  printf("cdrom_t::read_sector(\"%02d:%02d:%02d\")\n",
+          read_timecode.minute,
+          read_timecode.second,
+          read_timecode.sector);
 
   cdrom_sector_timecode_t &tc = read_timecode;
   int32_t cursor =
@@ -153,9 +153,7 @@ void cdrom_t::command_set_seek_target(uint8_t minute, uint8_t second, uint8_t se
 }
 
 void cdrom_t::command_test(uint8_t function) {
-  if (utility::log_cdrom) {
-    printf("cdrom_t::command_test(0x%02x)\n", function);
-  }
+  printf("cdrom_t::command_test(0x%02x)\n", function);
 
   switch (function) {
   case 0x20:
@@ -215,9 +213,7 @@ void cdrom_t::logic_transferring_command() {
 void cdrom_t::logic_executing_command() {
 #define get_param() logic.parameter_fifo.read()
 
-  if (utility::log_cdrom) {
-    printf("cdrom_t::control::executing_command(0x%02x)\n", logic.command);
-  }
+  printf("cdrom_t::control::executing_command(0x%02x)\n", logic.command);
 
   switch (logic.command) {
   case 0x01:
