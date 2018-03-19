@@ -66,6 +66,7 @@ struct memory_t : public addressable_t {
       return false;
     }
   }
+
 };
 
 

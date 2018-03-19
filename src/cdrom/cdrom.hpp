@@ -1,5 +1,5 @@
-#ifndef __psxact_cdrom_core_hpp__
-#define __psxact_cdrom_core_hpp__
+#ifndef __psxact_cdrom__
+#define __psxact_cdrom__
 
 #include <stdint.h>
 #include <stdio.h>
@@ -164,4 +164,4 @@ struct cdrom_t : public addressable_t {
 };
 
 
-#endif // __psxact_cdrom_core_hpp__
+#endif // __psxact_cdrom__

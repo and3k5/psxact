@@ -77,6 +77,8 @@ private:
 
 };
 
-extern console_t *bus;
+
+extern console_t *console;
+
 
 #endif // __psxact_console__

@@ -1,5 +1,5 @@
-#ifndef __psxact_spu_core_hpp__
-#define __psxact_spu_core_hpp__
+#ifndef __psxact_spu__
+#define __psxact_spu__
 
 
 #include "addressable.hpp"
@@ -7,7 +7,7 @@
 #include "memory.hpp"
 
 
-struct spu_t : public addressable_t {
+class spu_t : public addressable_t {
 
   uint16_t control;
   uint16_t status;
@@ -20,6 +20,8 @@ struct spu_t : public addressable_t {
   uint16_t sound_ram_address_latch;
   uint16_t sound_ram_transfer_control;
 
+public:
+
   spu_t();
 
   uint32_t io_read_half(uint32_t address);
@@ -29,4 +31,4 @@ struct spu_t : public addressable_t {
 };
 
 
-#endif // __psxact_spu_core_hpp__
+#endif // __psxact_spu__

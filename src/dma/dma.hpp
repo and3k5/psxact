@@ -1,12 +1,12 @@
-#ifndef __psxact_dma_core_hpp__
-#define __psxact_dma_core_hpp__
+#ifndef __psxact_dma__
+#define __psxact_dma__
 
 
 #include "addressable.hpp"
 #include "console.hpp"
 
 
-struct dma_t : public addressable_t {
+class dma_t : public addressable_t {
 
   uint32_t dpcr = 0x07654321;
   uint32_t dicr = 0x00000000;
@@ -16,6 +16,8 @@ struct dma_t : public addressable_t {
     uint32_t counter;
     uint32_t control;
   } channels[7];
+
+public:
 
   dma_t();
 
@@ -46,7 +48,8 @@ struct dma_t : public addressable_t {
   void run_channel_6();
 
   void update_irq_active_flag();
+
 };
 
 
-#endif // __psxact_dma_core_hpp__
+#endif // __psxact_dma__

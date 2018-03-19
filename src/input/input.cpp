@@ -12,33 +12,29 @@ input_t::input_t()
 }
 
 
-static uint32_t get_index(uint32_t address) {
-  return address - 0x1f801040;
-}
-
-
 uint32_t input_t::io_read_word(uint32_t address) {
   printf("[input] io_read_word(0x%08x)\n", address);
 
-  switch (get_index(address)) {
-  case 0:
-    if (rx_occurred) {
-      rx_occurred = 0;
-      return 0xffffff00 | rx_data;
-    }
-    else {
-      return 0xffffffff;
-    }
+  switch (address - 0x1f801040) {
+    case 0:
+      if (rx_occurred) {
+        rx_occurred = 0;
+        return 0xffffff00 | rx_data;
+      }
+      else {
+        return 0xffffffff;
+      }
 
-  case 4:
-    return
+    case 4:
+      return (
         (1           << 0) | // tx_ready_1
         (rx_occurred << 1) |
         (1           << 2) | // tx_ready_2
         (0           << 3) | // rx_parity_error
         (dsr         << 7) |
         (irq         << 9) |
-        (baud_timer  << 11);
+        (baud_timer  << 11)
+      );
   }
 
   return 0;
@@ -46,49 +42,54 @@ uint32_t input_t::io_read_word(uint32_t address) {
 
 
 static int32_t get_baud_rate_factor(uint32_t data) {
-  static const int lut[4] = {1, 1, 16, 64};
+  switch (data & 3) {
+    case 0: return 1;
+    case 1: return 1;
+    case 2: return 16;
+    case 3: return 64;
+  }
 
-  return lut[data & 3];
+  return 0;
 }
 
 
 void input_t::io_write_word(uint32_t address, uint32_t data) {
   printf("[input] io_write_word(0x%08x, 0x%08x)\n", address, data);
 
-  switch (get_index(address)) {
-  case 0x0:
-    tx_data = uint8_t(data);
-    tx_occurring = tx_enable;
-    baud_elapses = 0;
-    break;
+  switch (address - 0x1f801040) {
+    case 0x0:
+      tx_data = uint8_t(data);
+      tx_occurring = tx_enable;
+      baud_elapses = 0;
+      break;
 
-  case 0x8:
-    baud_factor = get_baud_rate_factor(data);
-    break;
+    case 0x8:
+      baud_factor = get_baud_rate_factor(data);
+      break;
 
-  case 0xa:
-    if (data & (1 << 4)) {
-      irq = 0;
-    }
-    else {
-      tx_enable = ((data >> 0) & 1) != 0;
-      rx_enable = ((data >> 2) & 1) != 0;
-
-      auto &port = ports[(data >> 13) & 1];
-
-      if (data & (1 << 1)) {
-        port.sequence = 0;
-        port.status = input_port_status_t::selected;
+    case 0xa:
+      if (data & (1 << 4)) {
+        irq = 0;
       }
       else {
-        port.status = input_port_status_t::none;
-      }
-    }
-    break;
+        tx_enable = ((data >> 0) & 1) != 0;
+        rx_enable = ((data >> 2) & 1) != 0;
 
-  case 0xe:
-    baud_reload = data & 0xffff;
-    break;
+        auto &port = ports[(data >> 13) & 1];
+
+        if (data & (1 << 1)) {
+          port.sequence = 0;
+          port.status = input_port_status_t::selected;
+        }
+        else {
+          port.status = input_port_status_t::none;
+        }
+      }
+      break;
+
+    case 0xe:
+      baud_reload = data & 0xffff;
+      break;
   }
 }
 
@@ -101,7 +102,7 @@ void input_t::reload_baud() {
 void input_t::tick() {
   if (dsr_cycles && !--dsr_cycles && dsr) {
     irq = 1;
-    bus->irq(7);
+    console->irq(7);
   }
 
   baud_timer--;
@@ -157,14 +158,14 @@ bool input_t::send(uint8_t request, uint8_t *response) {
   }
 
   switch (port->access) {
-  case input_port_access_t::controller:
-    return send_controller(port, request, response);
+    case input_port_access_t::controller:
+      return send_controller(port, request, response);
 
-  case input_port_access_t::memory_card:
-    return send_memory_card(port, request, response);
+    case input_port_access_t::memory_card:
+      return send_memory_card(port, request, response);
 
-  default:
-    return send_null(port, request, response);
+    default:
+      return send_null(port, request, response);
   }
 }
 
@@ -190,27 +191,27 @@ bool input_t::send_controller_digital(struct input_port_t *port, uint8_t request
   port->sequence++;
 
   switch (sequence) {
-  case 0:
-    *response = 0xff;
-    return request == 0x01;
+    case 0:
+      *response = 0xff;
+      return request == 0x01;
 
-  case 1:
-    *response = 0x41;
-    return request == 0x42;
+    case 1:
+      *response = 0x41;
+      return request == 0x42;
 
-  case 2:
-    *response = 0x5a;
-    return 1;
+    case 2:
+      *response = 0x5a;
+      return 1;
 
-  case 3:
-    *response = port->data >> 0;
-    return 1;
+    case 3:
+      *response = port->data >> 0;
+      return 1;
 
-  case 4:
-    *response = port->data >> 8;
-    return 0;
+    case 4:
+      *response = port->data >> 8;
+      return 0;
 
-  default:
-    return send_null(port, request, response);
+    default:
+      return send_null(port, request, response);
   }
 }

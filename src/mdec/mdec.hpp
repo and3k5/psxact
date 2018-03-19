@@ -1,5 +1,5 @@
-#ifndef __psxact_mdec_core__
-#define __psxact_mdec_core__
+#ifndef __psxact_mdec__
+#define __psxact_mdec__
 
 
 #include "addressable.hpp"
@@ -13,4 +13,4 @@ struct mdec_t : public addressable_t {
 };
 
 
-#endif // __psxact_mdec_core__
+#endif // __psxact_mdec__

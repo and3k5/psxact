@@ -66,17 +66,17 @@ addressable_t *console_t::decode(uint32_t address) {
 
 static uint32_t read_common(uint32_t address) {
   switch (address) {
-//case 0x1f801000: return 0x1f000000;
-//case 0x1f801004: return 0x1f802000;
-//case 0x1f801008: return 0x0013243f;
-//case 0x1f80100c: return 0x00003022;
-//case 0x1f801010: return 0x0013243f;
-  case 0x1f801014: return 0x200931e1;
-//case 0x1f801018: return;
-//case 0x1f80101c: return 0x00070777;
-//case 0x1f801020: return;
+//  case 0x1f801000: return 0x1f000000;
+//  case 0x1f801004: return 0x1f802000;
+//  case 0x1f801008: return 0x0013243f;
+//  case 0x1f80100c: return 0x00003022;
+//  case 0x1f801010: return 0x0013243f;
+    case 0x1f801014: return 0x200931e1;
+//  case 0x1f801018: return;
+//  case 0x1f80101c: return 0x00070777;
+//  case 0x1f801020: return;
 
-//case 0x1f801060: return 0x00000b88;
+//  case 0x1f801060: return 0x00000b88;
   }
 
   if (address == 0xfffe0130) {
@@ -120,17 +120,18 @@ uint32_t console_t::read_word(uint32_t address) {
 
 static void write_common(uint32_t address, uint32_t data) {
   switch (address) {
-  case 0x1f801000: return assert(data == 0x1f000000);
-  case 0x1f801004: return assert(data == 0x1f802000);
-  case 0x1f801008: return assert(data == 0x0013243f);
-  case 0x1f80100c: return assert(data == 0x00003022);
-  case 0x1f801010: return assert(data == 0x0013243f);
-  case 0x1f801014: return assert(data == 0x200931e1);
-  case 0x1f801018: return assert(data == 0x00020843 || data == 0x00020943);
-  case 0x1f80101c: return assert(data == 0x00070777);
-  case 0x1f801020: return assert(data == 0x00031125 || data == 0x0000132c || data == 0x00001323 || data == 0x00001325);
-
-  case 0x1f801060: return assert(data == 0x00000b88);
+    case 0x1f801000:
+    case 0x1f801004:
+    case 0x1f801008:
+    case 0x1f80100c:
+    case 0x1f801010:
+    case 0x1f801014:
+    case 0x1f801018:
+    case 0x1f80101c:
+    case 0x1f801020:
+    case 0x1f801060:
+      printf("[console] write_common(0x%08x, 0x%08x)\n", address, data);
+      return;
   }
 
   if (address == 0x1f802041) {
@@ -219,18 +220,18 @@ void console_t::run_for_one_frame(int *x, int *y, int *w, int *h) {
   *y = (gpu->display_area_y);
 
   switch ((gpu->status >> 16) & 7) {
-  case 0: *w = 256; break;
-  case 1: *w = 368; break;
-  case 2: *w = 320; break;
-  case 3: *w = 368; break;
-  case 4: *w = 512; break;
-  case 5: *w = 368; break;
-  case 6: *w = 640; break;
-  case 7: *w = 368; break;
+    case 0: *w = 256; break;
+    case 1: *w = 368; break;
+    case 2: *w = 320; break;
+    case 3: *w = 368; break;
+    case 4: *w = 512; break;
+    case 5: *w = 368; break;
+    case 6: *w = 640; break;
+    case 7: *w = 368; break;
   }
 
   switch ((gpu->status >> 19) & 1) {
-  case 0: *h = 240; break;
-  case 1: *h = 480; break;
+    case 0: *h = 240; break;
+    case 1: *h = 480; break;
   }
 }

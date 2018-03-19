@@ -1,5 +1,5 @@
-#ifndef __psxact_counter_hpp__
-#define __psxact_counter_hpp__
+#ifndef __psxact_counter__
+#define __psxact_counter__
 
 
 #include "addressable.hpp"
@@ -92,4 +92,4 @@ private:
 };
 
 
-#endif // __psxact_counter_hpp__
+#endif // __psxact_counter__
