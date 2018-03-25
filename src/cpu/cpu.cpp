@@ -44,8 +44,9 @@ cpu_t::opcode cpu_t::op_table_special[64] = {
 };
 
 
-cpu_t::cpu_t()
-  : addressable_t("cpu") {
+cpu_t::cpu_t(memory_access_t *memory)
+  : addressable_t("cpu")
+  , memory(memory) {
 
   regs.gp[0] = 0;
   regs.pc = 0xbfc00000;
@@ -159,7 +160,7 @@ void cpu_t::read_code() {
 
   // todo: read i-cache
 
-  code = console->read_word(map_address(regs.this_pc));
+  code = memory->read_word(map_address(regs.this_pc));
 }
 
 
@@ -170,7 +171,7 @@ uint32_t cpu_t::read_data_byte(uint32_t address) {
 
   // todo: read d-cache?
 
-  return console->read_byte(map_address(address));
+  return memory->read_byte(map_address(address));
 }
 
 
@@ -181,7 +182,7 @@ uint32_t cpu_t::read_data_half(uint32_t address) {
 
   // todo: read d-cache?
 
-  return console->read_half(map_address(address));
+  return memory->read_half(map_address(address));
 }
 
 
@@ -192,7 +193,7 @@ uint32_t cpu_t::read_data_word(uint32_t address) {
 
   // todo: read d-cache?
 
-  return console->read_word(map_address(address));
+  return memory->read_word(map_address(address));
 }
 
 
@@ -203,7 +204,7 @@ void cpu_t::write_data_byte(uint32_t address, uint32_t data) {
 
   // todo: write d-cache?
 
-  return console->write_byte(map_address(address), data);
+  return memory->write_byte(map_address(address), data);
 }
 
 
@@ -214,7 +215,7 @@ void cpu_t::write_data_half(uint32_t address, uint32_t data) {
 
   // todo: write d-cache?
 
-  return console->write_half(map_address(address), data);
+  return memory->write_half(map_address(address), data);
 }
 
 
@@ -225,7 +226,7 @@ void cpu_t::write_data_word(uint32_t address, uint32_t data) {
 
   // todo: write d-cache?
 
-  return console->write_word(map_address(address), data);
+  return memory->write_word(map_address(address), data);
 }
 
 

@@ -3,7 +3,7 @@
 
 
 #include "addressable.hpp"
-#include "console.hpp"
+#include "interrupt_access.hpp"
 
 
 struct counter_unit_t {
@@ -50,12 +50,14 @@ struct counter_unit_t {
 
 struct counter_t : public addressable_t {
 
+  interrupt_access_t *irq;
+
   bool in_hblank;
   bool in_vblank;
 
   counter_unit_t units[3];
 
-  counter_t();
+  counter_t(interrupt_access_t *irq);
 
   uint32_t io_read_word(uint32_t address);
 

@@ -14,8 +14,9 @@
 #include "utility.hpp"
 
 
-counter_t::counter_t()
-  : addressable_t("counter") {
+counter_t::counter_t(interrupt_access_t *irq)
+  : addressable_t("counter")
+  , irq(irq) {
 
   unit_init(0, 11, 7 * 4);
   unit_init(1, 11, 7 * 3413);
@@ -175,17 +176,22 @@ void counter_t::unit_set_counter(int n, uint16_t data) {
 
 
 void counter_t::unit_irq(int n) {
-  auto &irq = units[n].irq;
+  auto &interrupt = units[n].irq;
 
-  if (irq.enable) {
-    irq.enable = irq.repeat;
+  if (interrupt.enable) {
+    interrupt.enable = interrupt.repeat;
 
-    if (irq.toggle && irq.bit == 0) {
-      irq.bit = 1;
+    if (interrupt.toggle && interrupt.bit == 0) {
+      interrupt.bit = 1;
     }
     else {
-      irq.bit = 0;
-      console->irq(4 + n);
+      interrupt.bit = 0;
+
+      switch (n) {
+        case 0: irq->send(interrupt_type_t::TMR0); break;
+        case 1: irq->send(interrupt_type_t::TMR1); break;
+        case 2: irq->send(interrupt_type_t::TMR2); break;
+      }
     }
   }
 }

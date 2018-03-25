@@ -59,8 +59,10 @@ set(SOURCE_FILES
         src/addressable.cpp
         src/addressable.hpp
         src/fifo.hpp
+        src/interrupt_access.hpp
         src/limits.hpp
         src/memory.hpp
+        src/memory_access.hpp
         src/psxact.cpp
         src/sdl2.cpp
         src/sdl2.hpp

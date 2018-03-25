@@ -3,14 +3,17 @@
 
 
 #include <cstdio>
-#include "addressable.hpp"
-#include "console.hpp"
 #include "cpu/cpu_cop.hpp"
 #include "cpu/cpu_cop0.hpp"
 #include "cpu/cpu_cop2.hpp"
+#include "addressable.hpp"
+#include "console.hpp"
+#include "memory_access.hpp"
 
 
 struct cpu_t : public addressable_t {
+
+  memory_access_t *memory;
 
   cpu_cop_t *cop0;
   cpu_cop_t *cop1;
@@ -47,7 +50,7 @@ struct cpu_t : public addressable_t {
 
   static opcode op_table_special[64];
 
-  cpu_t();
+  cpu_t(memory_access_t *memory);
 
   void disassemble(FILE *file);
 

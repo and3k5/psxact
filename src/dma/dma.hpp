@@ -3,10 +3,14 @@
 
 
 #include "addressable.hpp"
-#include "console.hpp"
+#include "interrupt_access.hpp"
+#include "memory_access.hpp"
 
 
 class dma_t : public addressable_t {
+
+  interrupt_access_t *irq;
+  memory_access_t *memory;
 
   uint32_t dpcr = 0x07654321;
   uint32_t dicr = 0x00000000;
@@ -19,7 +23,7 @@ class dma_t : public addressable_t {
 
 public:
 
-  dma_t();
+  dma_t(interrupt_access_t *irq, memory_access_t *memory);
 
   uint32_t io_read_word(uint32_t address);
 

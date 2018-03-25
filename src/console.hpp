@@ -4,7 +4,9 @@
 
 #include <cstdint>
 #include "addressable.hpp"
+#include "interrupt_access.hpp"
 #include "memory.hpp"
+#include "memory_access.hpp"
 
 
 enum class bus_width_t {
@@ -35,7 +37,9 @@ struct mdec_t;
 
 struct spu_t;
 
-struct console_t {
+struct console_t
+  : public memory_access_t
+  , public interrupt_access_t {
 
   memory_t<19> bios;
   memory_t<21> wram;
@@ -55,7 +59,7 @@ struct console_t {
 
   console_t(const char *bios_file_name, const char *game_file_name);
 
-  void irq(int32_t interrupt);
+  void send(interrupt_type_t flag);
 
   uint32_t read_byte(uint32_t address);
 
@@ -76,9 +80,6 @@ private:
   addressable_t *decode(uint32_t address);
 
 };
-
-
-extern console_t *console;
 
 
 #endif // __psxact_console__

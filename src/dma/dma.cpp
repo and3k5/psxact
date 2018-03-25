@@ -2,8 +2,10 @@
 #include "utility.hpp"
 
 
-dma_t::dma_t()
-  : addressable_t("dma") {
+dma_t::dma_t(interrupt_access_t *irq, memory_access_t *memory)
+  : addressable_t("dma")
+  , irq(irq)
+  , memory(memory) {
 }
 
 
@@ -107,8 +109,8 @@ void dma_t::run_channel_2_data_read() {
 
   for (uint32_t a = 0; a < ba; a++) {
     for (uint32_t s = 0; s < bs; s++) {
-      uint32_t data = console->read_word(0x1f801810);
-      console->write_word(address, data);
+      uint32_t data = memory->read_word(0x1f801810);
+      memory->write_word(address, data);
       address += 4;
     }
   }
@@ -129,8 +131,8 @@ void dma_t::run_channel_2_data_write() {
 
   for (uint32_t a = 0; a < ba; a++) {
     for (uint32_t s = 0; s < bs; s++) {
-      uint32_t data = console->read_word(address);
-      console->write_word(0x1f801810, data);
+      uint32_t data = memory->read_word(address);
+      memory->write_word(0x1f801810, data);
       address += 4;
     }
   }
@@ -145,14 +147,14 @@ void dma_t::run_channel_2_list() {
   uint32_t address = channels[2].address & 0x1ffffc;
 
   while (1) {
-    uint32_t header = console->read_word(address);
+    uint32_t header = memory->read_word(address);
     uint32_t length = header >> 24;
 
     for (uint32_t i = 0; i < length; i++) {
       address = (address + 4) & 0x1ffffc;
 
-      uint32_t data = console->read_word(address);
-      console->write_word(0x1f801810, data);
+      uint32_t data = memory->read_word(address);
+      memory->write_word(0x1f801810, data);
     }
 
     if (header & 0x800000) {
@@ -175,8 +177,8 @@ void dma_t::run_channel_3() {
   counter = counter ? counter : 0x10000;
 
   for (uint32_t i = 0; i < counter; i++) {
-    uint32_t data = console->read_word(0x1f801800);
-    console->write_word(address, data);
+    uint32_t data = memory->read_word(0x1f801800);
+    memory->write_word(address, data);
 
     address += 4;
   }
@@ -194,8 +196,8 @@ void dma_t::run_channel_4_write() {
   counter = counter ? counter : 0x10000;
 
   for (uint32_t i = 0; i < counter; i++) {
-    uint32_t data = console->read_word(address);
-    console->write_word(0x1f801da8, data);
+    uint32_t data = memory->read_word(address);
+    memory->write_word(0x1f801da8, data);
 
     address += 2;
   }
@@ -213,11 +215,11 @@ void dma_t::run_channel_6() {
   counter = counter ? counter : 0x10000;
 
   for (uint32_t i = 1; i < counter; i++) {
-    console->write_word(address, address - 4);
+    memory->write_word(address, address - 4);
     address -= 4;
   }
 
-  console->write_word(address, 0x00ffffff);
+  memory->write_word(address, 0x00ffffff);
 
   channels[6].control &= ~0x01000000;
 
@@ -298,7 +300,7 @@ void dma_t::update_irq_active_flag() {
 
   if (active) {
     if (!(dicr & 0x80000000)) {
-      console->irq(3);
+      irq->send(interrupt_type_t::DMA);
     }
 
     dicr |= 0x80000000;
