@@ -231,10 +231,10 @@ void cpu_t::write_data_word(uint32_t address, uint32_t data) {
 
 
 void cpu_t::update_irq(uint32_t stat, uint32_t mask) {
-  i_stat = stat;
-  i_mask = mask;
+  istat = stat;
+  imask = mask;
 
-  int flag = (i_stat & i_mask)
+  int flag = (istat & imask)
     ? cop0->read_gpr(13) |  (1 << 10)
     : cop0->read_gpr(13) & ~(1 << 10)
     ;
@@ -243,13 +243,23 @@ void cpu_t::update_irq(uint32_t stat, uint32_t mask) {
 }
 
 
+uint32_t cpu_t::get_imask() {
+  return imask;
+}
+
+
 void cpu_t::set_imask(uint32_t value) {
-  update_irq(i_stat, value);
+  update_irq(get_istat(), value);
+}
+
+
+uint32_t cpu_t::get_istat() {
+  return istat;
 }
 
 
 void cpu_t::set_istat(uint32_t value) {
-  update_irq(value, i_mask);
+  update_irq(value, get_imask());
 }
 
 
@@ -257,8 +267,8 @@ uint32_t cpu_t::io_read_word(uint32_t address) {
   printf("[cpu] io_read_word(0x%08x)\n", address);
 
   switch (address) {
-    case 0x1f801070: return i_stat;
-    case 0x1f801074: return i_mask;
+    case 0x1f801070: return get_istat();
+    case 0x1f801074: return get_imask();
   }
 
   return 0;
@@ -269,7 +279,7 @@ void cpu_t::io_write_word(uint32_t address, uint32_t data) {
   printf("[cpu] io_write_word(0x%08x, 0x%08x)\n", address, data);
 
   switch (address) {
-    case 0x1f801070: return set_istat(data & i_stat);
+    case 0x1f801070: return set_istat(data & get_istat());
     case 0x1f801074: return set_imask(data & 0x7ff);
   }
 }

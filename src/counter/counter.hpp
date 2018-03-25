@@ -48,7 +48,7 @@ struct counter_unit_t {
 };
 
 
-struct counter_t : public addressable_t {
+class counter_t : public addressable_t {
 
   interrupt_access_t *irq;
 
@@ -56,6 +56,8 @@ struct counter_t : public addressable_t {
   bool in_vblank;
 
   counter_unit_t units[3];
+
+public:
 
   counter_t(interrupt_access_t *irq);
 

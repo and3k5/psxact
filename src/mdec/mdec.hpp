@@ -6,7 +6,9 @@
 #include "console.hpp"
 
 
-struct mdec_t : public addressable_t {
+class mdec_t : public addressable_t {
+
+public:
 
   mdec_t();
 

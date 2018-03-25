@@ -15,29 +15,29 @@ enum class bus_width_t {
   word
 };
 
-struct cdrom_t;
+class cdrom_t;
 
-struct counter_t;
+class counter_t;
 
-struct cpu_t;
+class cpu_t;
 
-struct dma_t;
+class dma_t;
 
-struct exp1_t;
+class exp1_t;
 
-struct exp2_t;
+class exp2_t;
 
-struct exp3_t;
+class exp3_t;
 
-struct gpu_t;
+class gpu_t;
 
-struct input_t;
+class input_t;
 
-struct mdec_t;
+class mdec_t;
 
-struct spu_t;
+class spu_t;
 
-struct console_t
+class console_t
   : public memory_access_t
   , public interrupt_access_t {
 
@@ -57,6 +57,8 @@ struct console_t
   mdec_t *mdec;
   spu_t *spu;
 
+public:
+
   console_t(const char *bios_file_name, const char *game_file_name);
 
   void send(interrupt_type_t flag);
@@ -73,7 +75,7 @@ struct console_t
 
   void write_word(uint32_t address, uint32_t data);
 
-  void run_for_one_frame(int *x, int *y, int *w, int *h);
+  void run_for_one_frame(uint16_t **vram, int *w, int *h);
 
 private:
 

@@ -10,9 +10,6 @@ gpu_t::gpu_t()
 }
 
 
-vram_t vram;
-
-
 uint32_t gpu_t::data() {
   if (gpu_to_cpu_transfer.run.active) {
     uint16_t lower = vram_transfer();
