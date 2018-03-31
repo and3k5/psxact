@@ -4,14 +4,14 @@
 
 #include "addressable.hpp"
 #include "console.hpp"
-#include "memory/vram.hpp"
+#include "memory.hpp"
 
 
 class gpu_t : public addressable_t {
 
 public:
 
-  vram_t vram;
+  memory_t<20> vram;
 
   uint32_t data_latch = 0;
   uint32_t status = 0x14802000;
@@ -97,6 +97,14 @@ public:
   void gp0(uint32_t data);
 
   void gp1(uint32_t data);
+
+  uint32_t vram_address(int x, int y);
+
+  uint16_t *vram_data(int x, int y);
+
+  uint16_t vram_read(int x, int y);
+
+  void vram_write(int x, int y, uint16_t data);
 
   void vram_transfer(uint16_t data);
 

@@ -30,6 +30,10 @@ struct memory_t : public addressable_t {
     delete [] buffer;
   }
 
+  void *get_pointer(uint32_t address) {
+    return &buffer[address];
+  }
+
   uint32_t io_read_byte(uint32_t address) {
     return buffer[(address & mask) / 1];
   }
